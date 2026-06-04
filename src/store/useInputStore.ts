@@ -2,35 +2,43 @@ import { create } from 'zustand'
 
 interface InputState {
   boxId: string;
-  lockedShape: string | null;
-  lockedColor: string | null;
-  lockedMaterial: string | null;
+  selectedTags: string[];
+  lockedTags: string[];
   
-  // Actions
   setBoxId: (id: string) => void;
-  toggleLockShape: (shape: string) => void;
-  toggleLockColor: (color: string) => void;
-  toggleLockMaterial: (material: string) => void;
-  resetLocks: () => void;
+  toggleTag: (tag: string) => void;
+  toggleLock: (tag: string) => void;
+  clearUnlockedTags: () => void;
 }
 
 export const useInputStore = create<InputState>((set) => ({
   boxId: '',
-  lockedShape: null,
-  lockedColor: null,
-  lockedMaterial: null,
+  selectedTags: [],
+  lockedTags: [],
 
   setBoxId: (id) => set({ boxId: id }),
   
-  toggleLockShape: (shape) => set((state) => ({ 
-    lockedShape: state.lockedShape === shape ? null : shape 
+  toggleTag: (tag) => set((state) => ({
+    selectedTags: state.selectedTags.includes(tag)
+      ? state.selectedTags.filter(t => t !== tag)
+      : [...state.selectedTags, tag]
   })),
-  toggleLockColor: (color) => set((state) => ({ 
-    lockedColor: state.lockedColor === color ? null : color 
-  })),
-  toggleLockMaterial: (material) => set((state) => ({ 
-    lockedMaterial: state.lockedMaterial === material ? null : material 
-  })),
-  
-  resetLocks: () => set({ lockedShape: null, lockedColor: null, lockedMaterial: null }),
+
+  toggleLock: (tag) => set((state) => {
+    const isLocked = state.lockedTags.includes(tag)
+    const newSelected = isLocked 
+      ? state.selectedTags 
+      : Array.from(new Set([...state.selectedTags, tag]))
+
+    return {
+      lockedTags: isLocked
+        ? state.lockedTags.filter(t => t !== tag)
+        : [...state.lockedTags, tag],
+      selectedTags: newSelected
+    }
+  }),
+
+  clearUnlockedTags: () => set((state) => ({
+    selectedTags: [...state.lockedTags]
+  }))
 }))
